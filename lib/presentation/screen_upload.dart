@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tem_file_uploader/presentation/domain/service.dart';
+import 'package:tem_file_uploader/core/constant.dart';
+import 'package:tem_file_uploader/domain/service.dart';
 
 class ScreenUploadFile extends StatelessWidget {
   const ScreenUploadFile({super.key});
@@ -27,10 +28,25 @@ class ScreenUploadFile extends StatelessWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await MediaUploadService.filepicker();
-        },
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(left: w * 0.1),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            FloatingActionButton.extended(
+              label: const Text("Upload Image"),
+              onPressed: () async {
+                await MediaUploadService.mediaPicker(context, MediaType.image);
+              },
+            ),
+            FloatingActionButton.extended(
+              label: const Text("Upload Video"),
+              onPressed: () async {
+                await MediaUploadService.mediaPicker(context, MediaType.video);
+              },
+            )
+          ],
+        ),
       ),
     );
   }
