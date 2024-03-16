@@ -97,7 +97,11 @@ class PreviewWidget extends StatelessWidget {
               TextButton(
                   onPressed: () async {
                     if (media != null) {
-                      MediaUploadService.uploadImage(media!);
+                      mediaType == MediaType.image
+                          ? MediaUploadService.uploadMedia(
+                              media!, MediaType.image)
+                          : MediaUploadService.uploadMedia(
+                              media!, MediaType.video, thumbnNail);
                     }
                     navigatorKey.currentState?.pop();
                   },

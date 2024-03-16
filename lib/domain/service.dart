@@ -3,9 +3,10 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as path;
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tem_file_uploader/core/constant.dart';
 import 'package:tem_file_uploader/presentation/widgets.dart';
@@ -51,33 +52,51 @@ class MediaUploadService {
     }
   }
 
-  static Future<String> uploadImage(File mediaFile) async {
+  static Future<String> uploadMedia(File mediaFile, MediaType mediaType,
+      [Uint8List? thumbNail]) async {
     final referenceRoot = FirebaseStorage.instance.ref();
-    final referenceDirImage = referenceRoot.child('media');
-    final referenceImageToupload = referenceDirImage
+    final referenceDirMedia = referenceRoot.child('media');
+    final referenceMediaToupload = referenceDirMedia
         .child(DateTime.now().millisecondsSinceEpoch.toString());
-    String? downloadedUrl;
+    String? mediaDownloaddUrl;
+    String? thumbNailDownloaddUrl;
+
     try {
-      final uploadRef = await referenceImageToupload.putFile(mediaFile);
-      downloadedUrl = await referenceImageToupload.getDownloadURL();
+      await referenceMediaToupload.putFile(mediaFile);
+      mediaDownloaddUrl = await referenceMediaToupload.getDownloadURL();
+      log(mediaDownloaddUrl);
+      if (thumbNail != null) {
+        Uint8List imageInUnit8List = thumbNail;
+        final tempDir = await getTemporaryDirectory();
+        File file = await File('${tempDir.path}/image.png').create();
+        file.writeAsBytesSync(imageInUnit8List);
+        final referenceThumbNailRoot = FirebaseStorage.instance.ref();
+        final referenceDirThumbNail =
+            referenceThumbNailRoot.child('thumbnails');
+        final referenceThumbNailToupload = referenceDirThumbNail
+            .child(DateTime.now().millisecondsSinceEpoch.toString());
+        await referenceThumbNailToupload.putFile(file);
+        thumbNailDownloaddUrl =
+            await referenceThumbNailToupload.getDownloadURL();
+      }
+      log(mediaDownloaddUrl);
+      log(thumbNailDownloaddUrl ?? "");
     } catch (e) {
       return e.toString();
     }
-    String meidaName = path.basename(mediaFile.path);
-    String fileExtension = path.extension(meidaName);
-
-    log(fileExtension);
-    log(downloadedUrl);
-    final FirebaseFirestore ref = FirebaseFirestore.instance;
-    final dataBaseRef = ref.collection("mediaurl").doc();
-    dataBaseRef.set({"mediaUrl": downloadedUrl});
-    return downloadedUrl;
-  }
-
-  static Stream getData() async* {
-    final FirebaseFirestore ref = FirebaseFirestore.instance;
-    final dataBaseRef = ref.collection("mediaurl");
-    final mediaData = await dataBaseRef.get();
-    yield mediaData.docs.toList();
+    try {
+      final FirebaseFirestore ref = FirebaseFirestore.instance;
+      final dataBaseRef = ref.collection("mediaurl").doc();
+      mediaType == MediaType.image
+          ? dataBaseRef.set({"imageUrl": mediaDownloaddUrl, "videoUrl": ""})
+          : dataBaseRef.set({
+              "videoUrl": mediaDownloaddUrl,
+              "thambNail": thumbNailDownloaddUrl,
+              "imageUrl": "",
+            });
+    } catch (e) {
+      return e.toString();
+    }
+    return mediaDownloaddUrl;
   }
 }
