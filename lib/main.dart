@@ -1,7 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:tem_file_uploader/core/constant.dart';
 import 'package:tem_file_uploader/firebase_options.dart';
-import 'package:tem_file_uploader/presentation/screen_upload.dart';
+import 'package:tem_file_uploader/presentation/screens/screen_upload.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +23,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        snackBarTheme:
-            SnackBarThemeData(backgroundColor: Colors.purple.shade200),
-        dialogBackgroundColor: Colors.purple.shade200,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: ScreenUploadFile(),
+      theme: themeData,
+      home: const ScreenUploadFile(),
     );
   }
 }
