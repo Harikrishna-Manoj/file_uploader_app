@@ -10,7 +10,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:tem_file_uploader/core/constant.dart';
 import 'package:tem_file_uploader/domain/service.dart';
 import 'package:tem_file_uploader/main.dart';
-import 'package:tem_file_uploader/presentation/screens/screen_video_player.dart';
+import 'package:tem_file_uploader/presentation/screens/widgets.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ScreenUploadFile extends StatefulWidget {
@@ -55,9 +55,6 @@ class _ScreenUploadFileState extends State<ScreenUploadFile> {
         setState(() {
           uploadTask = null;
         });
-        setState(() {
-          uploadTask = null;
-        });
       }
 
       log(mediaDownloaddUrl ?? '');
@@ -92,135 +89,11 @@ class _ScreenUploadFileState extends State<ScreenUploadFile> {
         centerTitle: true,
         title: const Text("Your Favourite Moments"),
       ),
-      body: SafeArea(
+      body: const SafeArea(
         child: Stack(
           alignment: Alignment.center,
           children: [
-            StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('mediaurl')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return const Center(
-                      child: Text("Something went wrong"),
-                    );
-                  } else {
-                    return snapshot.data!.docs.isNotEmpty
-                        ? GridView.builder(
-                            itemCount: snapshot.data?.docs.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3, // number of items in each row
-                              mainAxisSpacing: 8.0, // spacing between rows
-                              crossAxisSpacing: 8.0, // spacing between columns
-                            ),
-                            padding: const EdgeInsets.all(8),
-                            itemBuilder: (context, index) {
-                              var mediaData = snapshot.data?.docs[index];
-                              return mediaData?["videoUrl"] == ""
-                                  ? InkWell(
-                                      onTap: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => Stack(
-                                            alignment: Alignment.center,
-                                            children: [
-                                              SizedBox(
-                                                child: Image.network(
-                                                  "${mediaData?["imageUrl"]}",
-                                                ),
-                                              ),
-                                              Positioned(
-                                                right: 10,
-                                                top: 10,
-                                                child: IconButton(
-                                                    onPressed: () =>
-                                                        navigatorKey
-                                                            .currentState
-                                                            ?.pop(),
-                                                    icon: const Icon(
-                                                      Icons
-                                                          .highlight_remove_sharp,
-                                                      color: Colors.white,
-                                                      size: 30,
-                                                    )),
-                                              )
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      child: SizedBox(
-                                          height: 50,
-                                          width: 50,
-                                          child: Image.network(
-                                            "${mediaData?["imageUrl"]}",
-                                            fit: BoxFit.fill,
-                                          )),
-                                    )
-                                  : InkWell(
-                                      onTap: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => Stack(
-                                            alignment: Alignment.center,
-                                            children: [
-                                              SizedBox(
-                                                child: ScreenVideoPlayer(
-                                                    videoUrl:
-                                                        mediaData?["videoUrl"]),
-                                              ),
-                                              Positioned(
-                                                right: 10,
-                                                top: 10,
-                                                child: IconButton(
-                                                    onPressed: () =>
-                                                        navigatorKey
-                                                            .currentState
-                                                            ?.pop(),
-                                                    icon: const Icon(
-                                                      Icons
-                                                          .highlight_remove_sharp,
-                                                      color: Colors.white,
-                                                      size: 30,
-                                                    )),
-                                              )
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      child: SizedBox(
-                                          height: 50,
-                                          width: 50,
-                                          child: Stack(
-                                            alignment: Alignment.center,
-                                            children: [
-                                              Image.network(
-                                                "${mediaData?["thambNail"]}",
-                                                fit: BoxFit.cover,
-                                              ),
-                                              const Icon(
-                                                Icons
-                                                    .play_circle_outline_outlined,
-                                                color: Colors.white,
-                                                size: 30,
-                                              )
-                                            ],
-                                          )),
-                                    );
-                            },
-                          )
-                        : const Center(
-                            child: Text("No uploaded files"),
-                          );
-                  }
-                }),
+            UploadedGridView(),
           ],
         ),
       ),
@@ -578,8 +451,10 @@ class _ScreenUploadFileState extends State<ScreenUploadFile> {
                             const SnackBar(content: Text("Select file")));
                   }
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Select file")));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Select file")));
+                  }
                 }
               },
             )
